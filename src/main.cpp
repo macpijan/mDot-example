@@ -26,7 +26,8 @@ lora::ChannelPlan* plan = NULL;
 
 Serial pc(USBTX, USBRX);
 
-AnalogIn lux(XBEE_AD0);
+AnalogIn batteryVoltage(PB_1);
+AnalogIn panelVoltage(PB_0);
 
 int main() {
     // Custom event handler for automatically displaying RX data
@@ -92,15 +93,29 @@ int main() {
         dot->restoreNetworkSession();
     }
 
+
+    const int analogChannelsUsed = 2;
+
     while (true) {
-        uint16_t light;
+        uint16_t analogInputRaw[analogChannelsUsed];
+        enum class AnalogVoltage { battery = 0, panel };
         std::vector<uint8_t> tx_data;
 
         // get some dummy data and send it to the gateway
-        light = lux.read_u16();
-        tx_data.push_back((light >> 8) & 0xFF);
-        tx_data.push_back(light & 0xFF);
-        logInfo("light: %lu [0x%04X]", light, light);
+        analogInputRaw[static_cast<int>(AnalogVoltage::battery)] = batteryVoltage.read_u16();
+        analogInputRaw[static_cast<int>(AnalogVoltage::panel)] = panelVoltage.read_u16();
+
+        for (int i = analogChannelsUsed; i > 0; i--) {
+            tx_data.push_back((analogInputRaw[i] >> 8) & 0xFF);
+            tx_data.push_back(analogInputRaw[i] & 0xFF);
+        }
+
+        logInfo("battery voltage: %lu [0x%04X]",
+                analogInputRaw[static_cast<int>(AnalogVoltage::battery)],
+                analogInputRaw[static_cast<int>(AnalogVoltage::battery)]);
+        logInfo("panel voltage: %lu [0x%04X]",
+                analogInputRaw[static_cast<int>(AnalogVoltage::panel)],
+                analogInputRaw[static_cast<int>(AnalogVoltage::panel)]);
         send_data(tx_data);
 
         // if going into deepsleep mode, save the session so we don't need to join again after waking up
