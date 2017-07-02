@@ -64,17 +64,7 @@ int main() {
                 logError("failed to set network join mode to MANUAL");
             }
         }
-        // in MANUAL join mode there is no join request/response transaction
-        // as long as the Dot is configured correctly and provisioned correctly on the gateway, it should be able to communicate
-        // network address - 4 bytes (00000001 - FFFFFFFE)
-        // network session key - 16 bytes
-        // data session key - 16 bytes
-        // to provision your Dot with a Conduit gateway, follow the following steps
-        //   * ssh into the Conduit
-        //   * provision the Dot using the lora-query application: http://www.multitech.net/developer/software/lora/lora-network-server/
-        //      lora-query -a 01020304 A 0102030401020304 <your Dot's device ID> 01020304010203040102030401020304 01020304010203040102030401020304
-        //   * if you change the network address, network session key, or data session key, make sure you update them on the gateway
-        // to provision your Dot with a 3rd party gateway, see the gateway or network provider documentation
+
         update_manual_config(network_address, network_session_key, data_session_key, frequency_sub_band, public_network, ack);
 
         // enable or disable Adaptive Data Rate
@@ -125,6 +115,6 @@ int main() {
         //sleep_wake_interrupt_only(deep_sleep);
         sleep_wake_rtc_or_interrupt(deep_sleep);
     }
- 
+
     return 0;
 }
