@@ -1,0 +1,5 @@
+BUILD/*
+lib/ISL29011/*
+lib/libmDot-dev-mbed5/*
+lib/mbed-os/*
+.temp/*
