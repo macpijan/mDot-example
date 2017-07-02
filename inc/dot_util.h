@@ -7,7 +7,6 @@
 #include "MTSLog.h"
 #include "MTSText.h"
 #include "ISL29011.h"
-#include "example_config.h"
 
 extern mDot* dot;
 
