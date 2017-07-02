@@ -2,19 +2,6 @@
 #include "RadioEvent.h"
 #include "Lora.h"
 
-#if ACTIVE_EXAMPLE == MANUAL_EXAMPLE
-
-/////////////////////////////////////////////////////////////////////////////
-// -------------------- DOT LIBRARY REQUIRED ------------------------------//
-// * Because these example programs can be used for both mDot and xDot     // //     devices, the LoRa stack is not included. The libmDot library should //
-//     be imported if building for mDot devices. The libxDot library       //
-//     should be imported if building for xDot devices.                    //
-// * https://developer.mbed.org/teams/MultiTech/code/libmDot-dev-mbed5/    //
-// * https://developer.mbed.org/teams/MultiTech/code/libmDot-mbed5/        //
-// * https://developer.mbed.org/teams/MultiTech/code/libxDot-dev-mbed5/    //
-// * https://developer.mbed.org/teams/MultiTech/code/libxDot-mbed5/        //
-/////////////////////////////////////////////////////////////////////////////
-
 /////////////////////////////////////////////////////////////
 // * these options must match the settings on your gateway //
 // * edit their values to match your configuration         //
@@ -39,12 +26,7 @@ lora::ChannelPlan* plan = NULL;
 
 Serial pc(USBTX, USBRX);
 
-#if defined(TARGET_XDOT_L151CC)
-I2C i2c(I2C_SDA, I2C_SCL);
-ISL29011 lux(i2c);
-#else
 AnalogIn lux(XBEE_AD0);
-#endif
 
 int main() {
     // Custom event handler for automatically displaying RX data
@@ -54,19 +36,7 @@ int main() {
 
     mts::MTSLog::setLogLevel(mts::MTSLog::TRACE_LEVEL);
 
-#if CHANNEL_PLAN == CP_US915
-    plan = new lora::ChannelPlan_US915();
-#elif CHANNEL_PLAN == CP_AU915
-    plan = new lora::ChannelPlan_AU915();
-#elif CHANNEL_PLAN == CP_EU868
     plan = new lora::ChannelPlan_EU868();
-#elif CHANNEL_PLAN == CP_KR920
-    plan = new lora::ChannelPlan_KR920();
-#elif CHANNEL_PLAN == CP_AS923
-    plan = new lora::ChannelPlan_AS923();
-#elif CHANNEL_PLAN == CP_AS923_JAPAN
-    plan = new lora::ChannelPlan_AS923_Japan();
-#endif
 
     assert(plan);
 
@@ -136,29 +106,12 @@ int main() {
         uint16_t light;
         std::vector<uint8_t> tx_data;
 
-#if defined(TARGET_XDOT_L151CC)
-        // configure the ISL29011 sensor on the xDot-DK for continuous ambient light sampling, 16 bit conversion, and maximum range
-        lux.setMode(ISL29011::ALS_CONT);
-        lux.setResolution(ISL29011::ADC_16BIT);
-        lux.setRange(ISL29011::RNG_64000);
-
-        // get the latest light sample and send it to the gateway
-        light = lux.getData();
-        tx_data.push_back((light >> 8) & 0xFF);
-        tx_data.push_back(light & 0xFF);
-        logInfo("light: %lu [0x%04X]", light, light);
-        send_data(tx_data);
-
-        // put the LSL29011 ambient light sensor into a low power state
-        lux.setMode(ISL29011::PWR_DOWN);
-#else 
         // get some dummy data and send it to the gateway
         light = lux.read_u16();
         tx_data.push_back((light >> 8) & 0xFF);
         tx_data.push_back(light & 0xFF);
         logInfo("light: %lu [0x%04X]", light, light);
         send_data(tx_data);
-#endif
 
         // if going into deepsleep mode, save the session so we don't need to join again after waking up
         // not necessary if going into sleep mode since RAM is retained
@@ -175,5 +128,3 @@ int main() {
  
     return 0;
 }
-
-#endif
