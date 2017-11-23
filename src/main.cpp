@@ -15,12 +15,6 @@ static bool public_network = true;
 static uint8_t ack = 0;
 static bool adr = false;
 
-// deepsleep consumes slightly less current than sleep
-// in sleep mode, IO state is maintained, RAM is retained, and application will resume after waking up
-// in deepsleep mode, IOs float, RAM is lost, and application will start from beginning after waking up
-// if deep_sleep == true, device will enter deepsleep mode
-static bool deep_sleep = true;
-
 mDot* dot = NULL;
 lora::ChannelPlan* plan = NULL;
 
@@ -86,13 +80,7 @@ int main() {
 
         // display configuration
         display_config();
-    } else {
-        // restore the saved session if the dot woke from deepsleep mode
-        // useful to use with deepsleep because session info is otherwise lost when the dot enters deepsleep
-        logInfo("restoring network session from NVM");
-        dot->restoreNetworkSession();
     }
-
 
     const int analogChannelsUsed = 2;
 
@@ -118,17 +106,7 @@ int main() {
                 analogInputRaw[static_cast<int>(AnalogVoltage::panel)]);
         send_data(tx_data);
 
-        // if going into deepsleep mode, save the session so we don't need to join again after waking up
-        // not necessary if going into sleep mode since RAM is retained
-        if (deep_sleep) {
-            logInfo("saving network session to NVM");
-            dot->saveNetworkSession();
-        }
-
-        // ONLY ONE of the three functions below should be uncommented depending on the desired wakeup method
-        //sleep_wake_rtc_only(deep_sleep);
-        //sleep_wake_interrupt_only(deep_sleep);
-        sleep_wake_rtc_or_interrupt(deep_sleep);
+        sleep_wake_rtc_only(false);
     }
 
     return 0;
