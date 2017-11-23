@@ -105,7 +105,7 @@ int main() {
         analogInputRaw[static_cast<int>(AnalogVoltage::battery)] = batteryVoltage.read_u16();
         analogInputRaw[static_cast<int>(AnalogVoltage::panel)] = panelVoltage.read_u16();
 
-        for (int i = analogChannelsUsed; i > 0; i--) {
+        for (int i = 0; i <= analogChannelsUsed - 1; i++) {
             tx_data.push_back((analogInputRaw[i] >> 8) & 0xFF);
             tx_data.push_back(analogInputRaw[i] & 0xFF);
         }
